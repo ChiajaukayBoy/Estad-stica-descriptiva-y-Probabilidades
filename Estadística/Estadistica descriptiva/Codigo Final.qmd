@@ -1,0 +1,940 @@
+---
+title: "Informe_PG1"
+author: 
+  -del Castillo Collanatos Alonso Matias 
+  -Flores Ayllon Luis Alberto 
+  -Jerusalen Zelaya Jorge
+  -Liang Corrales Renzo Chen Heng 
+  -Zamudio Raez Trilce 
+editor: visual
+date: "`r format(Sys.time(), '%d %B%Y')`"
+format:
+    html-document:
+      number-sections: true
+      toc: true
+      embed-resources: true
+---
+
+## 1. Tema
+
+*Influencia de las redes sociales en el estilo de vida de los jóvenes universitarios*
+
+## 2. Objetivo General
+
+Analizar el uso de las redes sociales en el público joven universitario y su impacto en su estilo de vida (horas de sueño, horas de estudio, horas de ejercicio, rendimiento académico, actividades extracurriculares).
+
+## 3. Objetivos Específicos
+
+-Estudiar la relación entre la frecuencia de revisión de redes sociales y el tiempo promedio de atención sostenida sin distracciones (variable numérica).
+
+-Evaluar si existe una diferencia en el desempeño académico entre las personas que duermen más y las que duermen menos.
+
+-Evaluar el desempeño académico de los estudiantes con respecto al tipo de contenido que consumen.
+
+-Analizar la diferencia en el promedio de horas de estudio diario entre estudiantes de universidades públicas y privadas. -Estudiar como el tipo de red social mas utilizada se relaciona con la satisfacción académica y social del estudiante.
+
+## 4. Contexto
+
+### 4.1 Población Objetivo
+
+Estudiantes universitarios que estén matriculados en alguna institución de educación superior durante el ciclo académico 2025-I. La población está formada por alumnos de diferentes carreras y ciclos de estudio (desde el primer hasta el último ciclo), que usen redes sociales con frecuencia. Se considerarán estudiantes de universidades tanto públicas como privadas.
+
+## 4.2 Tipo de Muestreo
+
+El muestreo por conveniencia es una técnica de muestreo no probabilística donde las muestras de la población se seleccionan solo porque están convenientemente disponibles para el investigador. De acuerdo a nuestro tema encuestamos aleatoriamente a los estudiantes universitarios que están más accesibles o disponibles, ya sea por cercanía dentro del campus, facilidad de contacto, pertenecer al mismo entorno académico.
+
+## 4.3 Recolección de Datos
+
+Crearemos un cuestionario con preguntas claves que nos ayuden a recolectar los datos necesarios. Este formulario lo llenaran los universitarios del ciclo 2025-I, con el fin de obtener los datos necesarios para cada variable y estas nos ayuden a responder los objetivos generales.
+
+## 4.4 Variables
+
+Variable Tipo de variable Descripción de cada variable
+
+Hora promedio de estudio Numérica_Continua Número promedio de horas que un estudiante dedica al estudio diariamente.
+
+Promedio de notas del último semestre Numérica_Continua Promedio numérico de calificaciones obtenidas por el estudiante durante el último semestre académico.
+
+Tiempo promedio de atención sostenida sin distracciones Numérica_Discreta Tiempo en minutos que un estudiante puede mantener la atención sin distracciones durante una actividad académica.
+
+Horas dormidas Numérica_Discreta Número de horas de sueño que reporta tener el estudiante por noche.
+
+Tipo de contenido que consume Categórica_Nominal Tipo de contenido digital que el estudiante consume principalmente en redes sociales (Educación, Entretenimiento, Información, Socializar.).
+
+Satisfacción académica Categórica_Ordinal Nivel de satisfacción con el rendimiento académico actual, expresado en una escala del 1 al 5.
+
+Satisfacción social Categórica_Ordinal Nivel de satisfacción con la interacción social presencial con amigos o compañeros, en una escala del 1 al 5.
+
+Tipo de universidad Categórica_Nominal Clasificación de la universidad a la que pertenece el estudiante: Pública o Privada.
+
+Red social más usada Categórica_Nominal Red social que el estudiante utiliza con mayor frecuencia (WhatsApp, Instagram, TikTok, Facebbok, X(Twitter), Linkedin, Telegram, Discord, Otro).
+
+## 5 Limpieza de datos
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(modeest)
+library(reshape2)
+library(DescTools)
+
+
+DF = read_csv("bd_proyecto.csv")
+Data_5 <- DF
+Data_5
+
+```
+
+```{r}
+nueva_data <- Data_5[, c(16,23,29,27,32,39,33,15,28)]
+Grupo5_renombrado <- nueva_data %>%
+  rename(
+    universidad = `3. ¿Estas en una universidad privada o pública?`,
+    horas_estudio = `4. ¿Cuántas horas en promedio al día estudias?`,
+    promedio_ponderado = `7. ¿Cuál fue tu promedio ponderado el ciclo pasado?`,
+    horas_sueno = `11. ¿Cuántas horas duermes aproximadamente por noche?`,
+    red_social_mas_usada = `12. ¿Qué plataforma de red social es la que más usas?`,
+    tiempo_sin_revisar_el_celular = `13. ¿Cuál es el tiempo máximo que puedes estar sin revisar tus redes sociales?`,
+    satisfaccion_social = `17. ¿Qué tan satisfecho estás con tu interacción social presencial con amigos o compañeros en tu centro de estudio y/o trabajo?`,
+    satisfaccion_academica = `24. ¿Qué tan satisfecho(a) estás con tu rendimiento académico actual?`,
+    tipo_contenido = `16. ¿Qué tipo de contenido consumes principalmente en redes sociales?`
+    
+  )
+copia1<-Grupo5_renombrado
+copia1
+
+```
+
+## 5.1 Cambio de nombre
+
+```{r}
+colnames(copia1)
+```
+
+## 5.2 Valores maximo, minimos y se convirtio a numericas y factor
+
+```{r}
+Grupo5_renombrado <- Grupo5_renombrado %>% mutate(promedio_ponderado = as.numeric(promedio_ponderado)) %>% mutate(tiempo_sin_revisar_el_celular = as.numeric(tiempo_sin_revisar_el_celular)) %>% mutate(red_social_mas_usada = as.factor(red_social_mas_usada))
+
+summary(nueva_data)
+nueva_data
+```
+
+## 5.3 Busqueda de Outliers
+
+```{r}
+analizar_variable <- function(Grupo5_renombrado, columna, titulo, color) {
+  Q1 <- quantile(Grupo5_renombrado[[columna]], 0.25, na.rm = TRUE)
+  Q3 <- quantile(Grupo5_renombrado[[columna]], 0.75, na.rm = TRUE)
+  IQR <- Q3 - Q1
+  
+  limite_inferior <- Q1 - 1.5 * IQR
+  limite_superior <- Q3 + 1.5 * IQR
+  
+  outliers <- Grupo5_renombrado[[columna]] < limite_inferior | Grupo5_renombrado[[columna]] > limite_superior
+  
+  print(paste("Posible outliers en", titulo, ":", sum(outliers, na.rm = TRUE)))
+  
+  boxplot(Grupo5_renombrado[[columna]],
+          main = titulo,
+          col = color,
+          ylab = "Valor")
+}
+
+analizar_variable(Grupo5_renombrado,
+                  "horas_estudio",
+                  "Horas de estudio", "lightblue")
+
+analizar_variable(Grupo5_renombrado,
+                  "promedio_ponderado",
+                  "Promedio ponderado", "lightgreen")
+
+analizar_variable(Grupo5_renombrado,
+                  "horas_sueno",
+                  "Horas de sueño", "lightcoral")
+
+analizar_variable(Grupo5_renombrado,
+                  "tiempo_sin_revisar_el_celular",
+                  "Tiempo sin revisar el celular", "lightyellow")
+
+
+
+nueva_data <- Grupo5_renombrado[-71, ]
+
+```
+
+## 5.4 Tipos de vareables
+
+```{r}
+Grupo5_renombrado$satisfaccion_social <- factor(Grupo5_renombrado$satisfaccion_social)
+Grupo5_renombrado$satisfaccion_academica <- factor(Grupo5_renombrado$satisfaccion_academica)
+Grupo5_renombrado$universidad <- factor(Grupo5_renombrado$universidad)
+Grupo5_renombrado$tipo_contenido <- factor(Grupo5_renombrado$tipo_contenido)
+```
+
+```{r}
+Grupo5_renombrado<- Grupo5_renombrado %>%
+  mutate(promedio_ponderado = ifelse(promedio_ponderado == 0, NA, promedio_ponderado))
+```
+
+```{r}
+glimpse(Grupo5_renombrado)
+```
+
+## 5.5 Normalizar
+
+## Horas de estudio
+
+```{r}
+Grupo5_renombrado %>%
+  filter(horas_estudio>10) %>%
+  select(c(2))
+```
+
+```{r}
+limite_inferior <- 0   
+limite_superior <- 8   
+
+nueva_data$horas_estudio <- ifelse(nueva_data$horas_estudio < limite_inferior | nueva_data$horas_estudio > limite_superior, NA, nueva_data$horas_estudio)
+
+summary(nueva_data$horas_estudio)
+```
+
+## Promedio ponderado
+
+```{r}
+limite_inferior <- 0  
+limite_superior <- 30  
+
+nueva_data$tiempo_sin_revisar_el_celular <- pmin(pmax(nueva_data$tiempo_sin_revisar_el_celular, limite_inferior), limite_superior)
+
+nueva_data$tiempo_sin_revisar_el_celular[nueva_data$tiempo_sin_revisar_el_celular < limite_inferior | nueva_data$tiempo_sin_revisar_el_celular > limite_superior] <- NA
+
+summary(Grupo5_renombrado$tiempo_sin_revisar_el_celular)
+summary(nueva_data$tiempo_sin_revisar_el_celular)
+```
+
+## Horas de sueño
+
+```{r}
+nueva_data$horas_sueno <- as.numeric(nueva_data$horas_sueno)
+
+Grupo5_renombrado %>%
+  filter(horas_sueno<2) %>%
+  select(c(9))
+```
+
+```{r}
+limite_inferior <- 2   
+limite_superior <- 8  
+
+nueva_data$horas_sueno[nueva_data$horas_sueno < limite_inferior] <- NA
+
+nueva_data$horas_sueno <- pmin(nueva_data$horas_sueno, limite_superior)
+
+
+summary(Grupo5_renombrado$horas_sueno)
+summary(nueva_data$horas_sueno)
+```
+
+## Satisfaccion social
+
+```{r}
+summary(Grupo5_renombrado$satisfaccion_social)
+sum(is.na(nueva_data$satisfaccion_social))
+```
+
+## Porcentajes de NA\`S
+
+```{r}
+total_filas <- nrow(nueva_data)
+
+tabla_na <- nueva_data %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "n_missings") %>%
+  mutate(porcentaje = round(100 * n_missings / total_filas, 2))
+tabla_na
+```
+
+```{r}
+df_copia<-nueva_data
+df<-nueva_data
+df
+```
+
+## 6. Analisis y conclusiones de los objetibos mediante descriptores y graficos
+
+## 6.1 Estudiar la relación entre frecuencia de revisión de redes sociales y el tiempo promedio de atención sostenida
+
+### Revisión de redes sociales al día
+
+```{r}
+datos <- DF %>%
+  filter(`Grupo de la sección 5 que realiza la encuesta.` == "Grupo 5") %>%
+  select(
+    tiempo_sin_revisar_el_celular = `13. ¿Cuál es el tiempo máximo que puedes estar sin revisar tus redes sociales?`,
+    revisiones_diarias = `14. ¿Cuántas veces al día aproximadamente revisas tu teléfono por notificaciones de redes sociales mientras estudias?`
+  ) %>%
+  mutate(
+    tiempo_sin_revisar_el_celular = as.numeric(tiempo_sin_revisar_el_celular),
+    revisiones_diarias = as.numeric(revisiones_diarias)
+  ) %>%
+  filter(
+    revisiones_diarias >= 0 & revisiones_diarias <= 60,
+    tiempo_sin_revisar_el_celular >= 0 & tiempo_sin_revisar_el_celular <= 8
+  )
+
+
+summary(datos)
+
+
+cat("Moda tiempo_sin_revisar_el_celular:", mfv(datos$tiempo_sin_revisar_el_celular, na_rm = TRUE), "\n")
+cat("Moda revisiones_diarias:", mfv(datos$revisiones_diarias, na_rm = TRUE), "\n")
+
+
+ggplot(datos, aes(y = tiempo_sin_revisar_el_celular)) +
+  geom_boxplot(fill = "skyblue") +
+  labs(title = "Boxplot: Tiempo sin revisar el celular", y = "Horas") +
+  theme_minimal()
+
+ggplot(datos, aes(y = revisiones_diarias)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Boxplot: Revisiones diarias mientras estudias", y = "Cantidad") +
+  theme_minimal()
+```
+
+### 6.1.1 Descriptores
+
+#### En el boxplot de **revisiones diarias mientras se estudia**, se observa una caja muy estrecha, lo que indica que la mayoría de los participantes presentan comportamientos similares en cuanto a la cantidad de veces que revisan el celular. Esto se refleja en un **bajo rango intercuartílico (RIC)** y una **baja desviación estándar**, lo que sugiere **baja variabilidad** en esta variable.
+
+```{r}
+#desviacion estandar de revisiones diarias
+sd_revisiones <- sd(datos$revisiones_diarias)
+ric_revisiones <- IQR(datos$revisiones_diarias)
+#desviacion estandar de tiempo sin revisar el celular
+sd_tiempo <- sd(datos$tiempo_sin_revisar_el_celular)
+ric_tiempo <- IQR(datos$tiempo_sin_revisar_el_celular)
+
+cat("Revisiones diarias:\n")
+cat("  Desviación estándar:", round(sd_revisiones, 2), "\n")
+cat("  Rango intercuartílico (RIC):", round(ric_revisiones, 2), "\n\n")
+
+cat("Tiempo sin revisar el celular:\n")
+cat("  Desviación estándar:", round(sd_tiempo, 2), "\n")
+cat("  Rango intercuartílico (RIC):", round(ric_tiempo, 2), "\n")
+```
+
+### 6.1.2 Graficos
+
+Hay pocas personas que revisan redes sociales muchas veces, pero esas pocas elevan la dispersión
+
+```{r}
+ggplot(datos, aes(x = revisiones_diarias)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_vline(xintercept = 10, color = "red", linetype = "dashed", size = 1.2) +  # Línea en la moda
+  annotate("text", x = 10, y = max(table(cut(datos$revisiones_diarias, breaks = seq(0, max(datos$revisiones_diarias), by = 1)))), 
+           label = "Moda = 10", vjust = -0.5, color = "red", size = 3) +  # Etiqueta
+  labs(
+    title = "Histograma: Revisiones de redes sociales al día",
+    x = "Revisiones por día",
+    y = "Frecuencia"
+  ) +
+  theme_minimal()
+```
+
+El gráfico de dispersión permite observar la relación entre la cantidad de revisiones diarias del celular y el tiempo que una persona puede permanecer sin revisarlo. Visualmente, se aprecia una posible tendencia negativa: a mayor número de revisiones diarias, menor es el tiempo de atención sostenida.
+
+```{r}
+ggplot(datos, aes(x = revisiones_diarias, y = tiempo_sin_revisar_el_celular)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  labs(
+    title = "Relación entre revisiones diarias del celular y tiempo de atención sostenida",
+    x = "Revisiones diarias del celular",
+    y = "Tiempo sin revisar el celular (horas)"
+  ) +
+  theme_minimal()
+```
+
+REGRESIÓN LINEAL
+
+tiempo_sin_revisar_el_celular=4.307−0.120⋅revisiones_diarias
+
+### 6.1.3 Conclusion
+
+En promedio, los estudiantes revisan sus redes sociales aproximadamente 8 veces al día durante sus sesiones de estudio. Este comportamiento presenta una alta variabilidad, con valores que oscilan entre 0 y 30 revisiones diarias. La moda, situada en 10 revisiones, representa la frecuencia más común entre los participantes. Además, una proporción considerable de estudiantes revisa su celular más de 15 veces al día. Existe una relación inversa entre la cantidad de veces que los estudiantes revisan sus redes sociales y el tiempo de atención sostenida sin distracciones. A mayor número de revisiones del celular, menor es su capacidad de mantener la atención sostenida sin interrupciones. Esta relación, con una correlación negativa moderada y significativa (r = -0.35, p \< 0.01).
+
+## 6.2 Evaluar si existe una diferencia en el desempeño académico entre las personas que duermen más y las que duermen menos.
+
+```{r}
+df<-Grupo5_renombrado
+```
+
+```{r}
+df <- df %>% 
+  filter(!is.na(promedio_ponderado), !is.na(horas_sueno))
+```
+
+### 6.2.1 Descriptores para Horas de Estudio
+
+```{r}
+media_estudio <- mean(df$horas_estudio, na.rm = TRUE)
+mediana_estudio <- median(df$horas_estudio, na.rm = TRUE)
+
+cv_estudio <- sd(df$horas_estudio, na.rm = TRUE) / media_estudio 
+
+IQR_estudio <- IQR(df$horas_estudio, na.rm = TRUE)
+
+cat("Media de Horas de Estudio: ", media_estudio, "\n")
+cat("Mediana de Horas de Estudio: ", mediana_estudio, "\n")
+cat("Coeficiente de Variación: ", cv_estudio, "\n")
+cat("Rango Intercuartílico (IQR): ", IQR_estudio, "\n")
+
+boxplot(nueva_data$horas_estudio, main="Horas de Estudio", ylab="Horas", col="lightblue")
+
+```
+
+### 6.2.2 Descriptores para Promedio Ponderado
+
+```{r}
+media_promedio <- mean(df$promedio_ponderado, na.rm = TRUE)
+mediana_promedio <- median(df$promedio_ponderado, na.rm = TRUE)
+
+cv_promedio <- sd(df$promedio_ponderado, na.rm = TRUE) / media_promedio 
+
+IQR_promedio <- IQR(df$promedio_ponderado, na.rm = TRUE)
+
+cat("Media del Promedio Ponderado: ", media_promedio, "\n")
+cat("Mediana del Promedio Ponderado: ", mediana_promedio, "\n")
+cat("Coeficiente de Variación: ", cv_promedio, "\n")
+cat("Rango Intercuartílico (IQR): ", IQR_promedio, "\n")
+
+boxplot(nueva_data$promedio_ponderado, main="Promedio Ponderado", ylab="Promedio", col="lightgreen")
+```
+
+### 6.2.3 Graficos para Horas de sueño
+
+```{r}
+ggplot(df, aes(x = horas_sueno)) +
+  geom_histogram(binwidth = 1, fill = "lightcoral", color = "black", alpha = 0.8, boundary = 0) +
+  labs(title = "Distribución de Horas de Sueño",
+       x = "Horas", y = "Frecuencia") +
+  theme_minimal()
+ggplot(Grupo5_renombrado, aes(x = promedio_ponderado)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black", alpha = 0.8, boundary = 0) +
+  labs(title = "Distribución del Promedio Académico",
+       x = "Promedio Ponderado", y = "Frecuencia") +
+  theme_minimal()
+```
+
+### 6.2.4 Tabla de Sueño
+
+```{r}
+df <- df %>% 
+  mutate(grupo_sueno = case_when(
+    horas_sueno <= 6 ~ "Poco sueño",
+    horas_sueno > 6 ~ "Más sueño"
+  ))
+```
+
+```{r}
+# Tabla resumen descriptiva en formato vertical
+df %>%
+  group_by(grupo_sueno) %>%
+  summarise(
+    Mínimo = min(promedio_ponderado, na.rm = TRUE),
+    Q1 = quantile(promedio_ponderado, 0.25, na.rm = TRUE),
+    Mediana = median(promedio_ponderado, na.rm = TRUE),
+    Media = mean(promedio_ponderado, na.rm = TRUE),
+    Q3 = quantile(promedio_ponderado, 0.75, na.rm = TRUE),
+    Máximo = max(promedio_ponderado, na.rm = TRUE),
+    Desviación = sd(promedio_ponderado, na.rm = TRUE),
+    n = n()
+  ) %>%
+  pivot_longer(cols = -grupo_sueno, names_to = "Estadística", values_to = "Valor") %>%
+  pivot_wider(names_from = grupo_sueno, values_from = Valor)
+```
+
+### 6.2.5 Analisis bivariado de Sueño vs Promedio Academico
+
+```{r}
+ggplot(df, aes(x = promedio_ponderado, fill = grupo_sueno)) +
+  geom_histogram(binwidth = 1, alpha = 0.7, position = "identity", color = "black", boundary = 0) +
+  facet_wrap(~grupo_sueno) +
+  labs(title = "Distribución del Promedio Académico por Grupos de Sueño",
+       x = "Promedio Académico", y = "Frecuencia") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Poco sueño" = "skyblue", "Más sueño" = "orange")) +
+  theme(legend.position = "none")
+
+```
+
+```{r}
+ggplot(df, aes(x = grupo_sueno, y = promedio_ponderado, fill = grupo_sueno)) +
+  geom_boxplot(alpha = 0.8, color = "black") +
+  labs(title = "Comparación del Promedio según Horas de Sueño",
+       x = "Grupo de Sueño", y = "Promedio Académico") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Poco sueño" = "skyblue", "Más sueño" = "orange")) +
+  theme(legend.position = "none")
+```
+
+```{r}
+ggplot(df, aes(x = horas_sueno, y = promedio_ponderado)) +
+  geom_point(color = "darkgreen", size = 3, alpha = 0.7) +  # puntos
+  geom_smooth(method = "lm", se = FALSE, color = "blue", linetype = "dashed") +  # línea de regresión
+  labs(
+    title = "Relación entre horas de sueño y promedio académico",
+    x = "Horas de sueño",
+    y = "Promedio académico"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+correlacion <- cor(df$horas_sueno, df$promedio_ponderado, use = "complete.obs", method = "pearson")
+print(correlacion)
+```
+
+Analisis de grafico:
+
+El gráfico con una línea de regresión muestra una tendencia positiva. A medida que aumentan las horas de sueño, el promedio académico también tiende a aumentar. Esto nos da una posible correlación entre el sueño y el rendimiento académico, donde a más horas de sueño pueden contribuir a un mejor desempeño académico. Pero el coeficiente de pearson indica que, en este caso, las horas de sueño no tienen una relación directa con el rendimiento académico. A pesar de las variaciones en las horas de sueño, el promedio académico no parece estar influenciado de manera significativa por el número de horas de descanso.
+
+### 6.2.6 Conclusion
+
+Según el análisis realizado podemos decir que no se encontró una relación clara entre las horas de sueño y el rendimiento académico. El coeficiente de correlación de pearson fue de 0.01301405, un número muy cercano a cero, lo que indica que prácticamente no hay conexión entre cuánto duermen los estudiantes y sus notas. Aunque en los gráficos se notan algunas diferencias en los promedios y una ligera variación en los resultados, no hay una tendencia clara que indique que dormir más o menos influya directamente en el desempeño académico. En resumen, esto sugiere que el rendimiento de los estudiantes depende de otros factores además del sueño.
+
+## 6.3 Evaluar el desempeño académico de los estudiantes con respecto al tipo de contenido que consumen.
+
+### 6.3.1 Descriptores y graficos
+
+#### 6.3.1.1 Promedio ponderado
+
+```{r}
+media_prom <- mean(df$promedio_ponderado, na.rm = TRUE)  # Media
+mediana_prom <- median(df$promedio_ponderado, na.rm = TRUE)  # Mediana
+sd_prom <- sd(df$promedio_ponderado, na.rm = TRUE)  # Desviación estándar
+min_prom <- min(df$promedio_ponderado, na.rm = TRUE)  # Mínimo
+max_prom <- max(df$promedio_ponderado, na.rm = TRUE)  # Máximo
+iqr_prom <- IQR(df$promedio_ponderado, na.rm = TRUE)  # Rango intercuartílico (IQR)
+q1_prom <- quantile(df$promedio_ponderado, 0.25, na.rm = TRUE)  # Primer cuartil (Q1)
+q3_prom <- quantile(df$promedio_ponderado, 0.75, na.rm = TRUE)  # Tercer cuartil (Q3)
+
+cat("Media de Promedio ponderado:", round(media_prom,2), "\n")
+cat("Mediana de Promedio ponderado:", round(mediana_prom,2), "\n")
+cat("Desviación estándar de Promedio ponderado:", round(sd_prom,2), "\n")
+cat("Mínimo de Promedio ponderado:", round(min_prom,2), "\n")
+cat("Máximo de Promedio ponderado:", round(max_prom,2), "\n")
+cat("Rango intercuartílico (IQR) de Promedio ponderado:", round(iqr_prom,2), "\n")
+cat("Primer cuartil (Q1) de Promedio ponderado:", round(q1_prom,2), "\n")
+cat("Tercer cuartil (Q3) de Promedio ponderado:", round(q3_prom,2), "\n")
+
+```
+
+```{r}
+#Grafica
+
+analizar_variable <- function(data, columna, titulo, color) {
+  Q1 <- quantile(data[[columna]], 0.25, na.rm = TRUE)
+  Q3 <- quantile(data[[columna]], 0.75, na.rm = TRUE)
+  IQR <- Q3 - Q1
+  
+  limite_inferior <- Q1 - 1.5 * IQR
+  limite_superior <- Q3 + 1.5 * IQR
+  
+  outliers <- data[[columna]] < limite_inferior | data[[columna]] > limite_superior
+  
+  print(paste("Posible outliers en", titulo, ":", sum(outliers, na.rm = TRUE)))
+  
+  boxplot(data[[columna]],
+          main = titulo,
+          col = color,
+          ylab = "Valor")
+}
+
+analizar_variable(nueva_data,
+                  "promedio_ponderado",
+                  "Promedio ponderado", "skyblue")
+```
+
+#### 6.3.1.2 Tipo de contenido consumido
+
+```{r}
+# Frecuencias absolutas de cada tipo de contenido
+frecuencias <- table(Data_5$`16. ¿Qué tipo de contenido consumes principalmente en redes sociales?`)
+
+frecuencias_relativas <- prop.table(frecuencias)
+
+porcentajes <- frecuencias_relativas * 100
+
+# Tabla combinada
+tabla_resumen <- data.frame(
+  Tipo_de_Contenido = names(frecuencias),
+  Frecuencia_Absoluta = as.integer(frecuencias),
+  Frecuencia_Relativa = frecuencias_relativas,
+  Porcentaje = paste0(round(porcentajes, 2), "%"),
+  row.names = NULL 
+)
+
+# Mostrar la tabla 
+cat("Tabla de Frecuencias:\n")
+print(tabla_resumen)
+
+#La moda
+moda <- tabla_resumen$Tipo_de_Contenido[which.max(tabla_resumen$Frecuencia_Absoluta)]
+cat("\nModa (categoría más frecuente):\n")
+cat(moda, "\n")
+```
+
+```{r}
+#Grafica tipo_contenido
+
+frecuencias <- table(Data_5$'16. ¿Qué tipo de contenido consumes principalmente en redes sociales?')
+
+# Colores únicos para cada barra
+colores <- rainbow(length(frecuencias))  # Genera colores distintos para cada barra
+
+# Grafico de barras
+barplot_heights <- barplot(frecuencias,
+                          col = colores,   
+                          main = "Frecuencia de Tipos de Contenido en Redes Sociales",
+                          xlab = "Tipos de Contenido",
+                          ylab = "Frecuencia",
+                          border = "white",
+                          las = 1,   
+                          cex.names = 0.5,   
+                          cex.axis = 0.7,    
+                          xlim = c(0, length(frecuencias) + 1.5),  
+                          ylim = c(0, max(frecuencias) + 50),   
+                          yaxt = "n",   
+                          space = 0.4)   
+
+# Valores de frecuencia encima de cada barra
+text(x = barplot_heights,
+     y = frecuencias,
+     labels = frecuencias,
+     pos = 3,     
+     cex = 0.7)   
+
+# Líneas horizontales en el gráfico 
+abline(h = seq(0, max(frecuencias) + 50, by = 50), col = "gray", lty = 2)  
+
+axis(2, at = seq(0, max(frecuencias) + 50, by = 50), las = 1) 
+
+
+# Leyenda 
+legend("topright",   
+       legend = names(frecuencias),   
+       fill = colores,   
+       title = "Tipo de Contenido",  
+       cex = 0.5)   
+
+# Marco 
+box()   
+```
+
+### 6.3.2 Analisis bivariado (Promedio ponderado y Tipo de contenido que consumen)
+
+```{r}
+tabla <- Grupo5_renombrado[, c("promedio_ponderado", "tipo_contenido")]
+
+# Imprimir la tabla
+print(tabla)
+```
+
+```{r}
+# Crear la base de datos en R
+data <- Grupo5_renombrado[, c("promedio_ponderado", "tipo_contenido")]
+
+library(ggplot2)
+
+ggplot(data, aes(x = tipo_contenido, y = promedio_ponderado, fill = tipo_contenido)) +
+  geom_boxplot(na.rm = TRUE) +  # Elimina los NA's al graficar
+  labs(
+    title = "Distribución del Promedio Ponderado por Tipo de Contenido",
+    x = "Tipo de Contenido",
+    y = "Promedio Ponderado"
+  ) +
+  scale_y_continuous(breaks = seq(min(data$promedio_ponderado, na.rm = TRUE), 
+                                  max(data$promedio_ponderado, na.rm = TRUE), 
+                                  by = 1)) +  # Intervalos de 1 en 1 en el eje Y
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(size = 8),  # Reduce el tamaño de letra en el eje X
+    plot.title = element_text(hjust = 0.5)  # Centra el título
+  ) +
+  guides(fill = "none")  # Elimina la leyenda
+```
+
+### 6.3.3 Conclusion
+
+El gráfico de cajas muestra la distribución del promedio ponderado según el tipo de contenido consumido en redes sociales. La mediana de las notas es de 14.8, con un rango intercuartil de 13 a 16. Se observa una mayor proporción de estudiantes que consumen **Entretenimiento (70.85%)**, lo que puede influir en la variabilidad de las calificaciones. Además, los estudiantes que consumen contenido de entretenimiento y socializan presentan una mayor dispersión, con valores atípicos que alcanzan notas significativamente bajas, mientras que los que consumen contenido educativo muestran una distribución más homogénea. Este análisis destaca la importancia de considerar el tipo de contenido consumido al evaluar el rendimiento académico, dado que la variabilidad en las calificaciones varía según las preferencias de contenido.
+
+## 6.4 Analizar la diferencia en el promedio de horas de estudio diario entre estudiantes de universidades públicas y privadas.
+
+### 6.4.1 Descriptores
+
+```{r}
+descriptores_objetivo_4 <- df %>%
+  group_by(universidad) %>%
+  summarise(
+    n = n(),
+    promedio_4 = mean(horas_estudio, na.rm = TRUE),
+    desviacion_estandar_4 = sd(horas_estudio, na.rm = TRUE),
+    primer_quartil_4 = quantile(horas_estudio, 0.25, na.rm = TRUE),
+    mediana_4 = median(horas_estudio, na.rm = TRUE),
+    tercer_cuartil_4 = quantile(horas_estudio, 0.75, na.rm = TRUE),
+    moda_4 = Mode(horas_estudio, na.rm = TRUE)
+  )
+
+
+descriptores_vertical <- descriptores_objetivo_4 %>%
+  pivot_longer(
+    cols = -universidad,
+    names_to = "descriptor",
+    values_to = "valor"
+  )
+
+tabla_descriptores <- descriptores_vertical %>%
+  pivot_wider(
+    names_from = universidad,
+    values_from = valor
+  )
+
+print(tabla_descriptores)
+```
+
+Media: Los estudiantes de universidades públicas estudian, en promedio, un poco más (3.83 horas) que los de universidades privadas (3.67 horas).
+
+Mediana: La mediana es mayor en universidades públicas (4.0 horas), lo que indica que al menos la mitad de los estudiantes en este grupo estudia más de 4 horas al día, mientras que en privadas es de 3.5 horas.
+
+Desviación estándar: La dispersión es ligeramente mayor en universidades públicas (1.88 horas), lo que indica mayor variabilidad en las horas de estudio en comparación con privadas (1.83 horas).
+
+La Moda muestra que hay una mayor cantidad de estudiantes de universidad privada que estudian dos horas
+
+En el resto de descriptores los resultados son iguales entre universiadades privadas y universiadades publicas, teniendo mismo minimo, maximo, primer y tercer cuadril.
+
+### 6.4.2 Grafico
+
+```{r}
+library(ggplot2)
+
+ggplot(df, aes(y = horas_estudio)) +
+  geom_boxplot(fill = "#0073C2FF", alpha = 0.7) +
+  labs(
+    title = "Boxplot de Horas de Estudio Diario",
+    y = "Horas de Estudio"
+  ) +
+  theme_minimal()
+```
+
+### 6.4.3 Analisis bivariado de Horas de estudio y tipo de universidad
+
+```{r}
+ggplot(df, aes(x = universidad, y = horas_estudio, fill = universidad)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    title = "Horas de Estudio por Tipo de Universidad",
+    x = "Tipo de Universidad",
+    y = "Horas de Estudio Diario"
+  ) +
+  scale_fill_manual(values = c("Pública" = "#00AFBB", "Privada" = "#E7B800")) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(df, aes(x = horas_estudio, fill = universidad)) +
+  geom_density(alpha = 0.5) +
+  labs(
+    title = "Distribución de horas de estudio por tipo de universidad",
+    x = "Horas de Estudio Diario",
+    y = "Densidad"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("#0073C2FF", "#EFC000FF"))
+```
+
+Con el primer grafico se puede ver que el rango intercuartil entre los dos es igual, pero que tienen medianas diferentes, por lo que la linea dentro de la caja esta en una ubicacion distinta entre universiada publica y privada, siendo mayor en publica que en privada.
+
+Con el segundo grafico, el de densidad, se puede ver que los de universidad privada se concentran mas entre 2 y 4 horas, mientras los de publica se concentra mas entre 4 horas sin mucha subida ni bajada hasta pasa las 6 horas.
+
+### 6.4.4 Conclusion
+
+Con esto podemos concluir como es que al comparar las horas diarias de estudio entre universidad publica y privada, se puede ver como sus promedios y desviaciones estandar estan muy cerca, teniendo al primer y tercer cuadril igual, solamente con una moda distinta, teniendo los de universidad publica 4 horas y los de privada 2, luego de eso, los de universidad publica estan mucho mas enfocado en 4 horas, teniendo buena consistencia entre los de 2, 4 y 6 horas diarias de estudio, por su parte los de privada se ve como se centran solo en 2 y 4 horas, bajando su intensidad para volver a subir en las 8 horas, donde estan mas enfocados que los de universidad publica.
+
+## 6.5 Estudiar como el tipo de red social mas utilizada se relaciona con la satisfacción académica y social del estudiante.
+
+### 6.5.1 Descriptores de (Red social mas usada)
+
+```{r}
+frecuencias <- df %>%
+  group_by(red_social_mas_usada) %>%
+  summarise(Frecuencia = n()) %>%
+  mutate(
+    Relativa = paste0(round((Frecuencia / sum(Frecuencia)) * 100, 2), "%")
+  ) %>%
+  arrange(desc(Frecuencia)) 
+
+print(frecuencias)
+
+moda_red<-mfv1(df$red_social_mas_usada)
+moda_red
+```
+
+### 6.5.2 Graficos Red social mas usada
+
+```{r}
+datos <- data.frame(
+  red_social = c("Whatsapp", "Tiktok", "Instagram", "X (Twitter)", "Otro",
+                 "Facebook / meta", "Discord", "Linkedin", "Telegram"),
+  frecuencia = c(608, 321, 217, 59, 34, 33, 25, 6, 3)
+)
+
+datos$porcentaje <- round(datos$frecuencia / sum(datos$frecuencia) * 100, 2)
+
+datos$red_social <- factor(datos$red_social, levels = datos$red_social)
+
+ggplot(datos, aes(x = red_social, y = frecuencia)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = paste0(porcentaje, "%")), 
+            vjust = -0.5, size = 3.5) +
+  labs(title = "Red Social Más Usada", y = "Frecuencia", x = NULL) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ylim(0, max(datos$frecuencia) + 50)
+```
+
+### 6.5.3 Descriptores de (Satisfaccion academica)
+
+```{r}
+frecuencias_academicas <- df %>%
+  group_by(satisfaccion_academica) %>%
+  summarise(Frecuencia_academicas = n()) %>%
+  mutate(
+    Relativa = paste0(round((Frecuencia_academicas / sum(Frecuencia_academicas)) * 100, 2), "%")
+  ) 
+
+print(frecuencias_academicas)
+
+moda_acade<-mfv1(df$satisfaccion_academica)
+moda_acade
+```
+
+### 6.5.4 Grafico de satisfaccion academica
+
+```{r}
+datos <- data.frame(
+  satisfaccion = factor(c("1", "2", "3", "4", "5", "NA"), 
+                        levels = c("1", "2", "3", "4", "5", "NA"), ordered = TRUE),
+  frecuencia = c(35, 146, 561, 421, 139, 4)
+)
+
+datos$porcentaje <- round(datos$frecuencia / sum(datos$frecuencia) * 100, 2)
+
+ggplot(datos, aes(x = satisfaccion, y = frecuencia)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5) +
+  labs(title = "Distribución de Satisfacción Académica",
+       x = "Nivel de Satisfacción (1 = Muy Baja, 5 = Muy Alta)",
+       y = "Frecuencia") +
+  theme_minimal() +
+  ylim(0, max(datos$frecuencia) + 50)
+```
+
+### 6.5.5 Descriptores para (sactisfacfion del estudiante)
+
+```{r}
+frecuencias_social <- df %>%
+  group_by(satisfaccion_social) %>%
+  summarise(Frecuencia_social = n()) %>%
+  mutate(
+    Relativa = paste0(round((Frecuencia_social / sum(Frecuencia_social)) * 100, 2), "%")
+  ) 
+
+print(frecuencias_social)
+
+moda_social<-mfv1(df$satisfaccion_social)
+moda_social
+
+```
+
+### 6.5.6 Grafico (satisfaccion academica)
+
+```{r}
+datos <- data.frame(
+  satisfaccion = factor(c("1", "2", "3", "4", "5"), 
+                        levels = c("1", "2", "3", "4", "5"), ordered = TRUE),
+  frecuencia = c(39, 65, 333, 531, 338)
+)
+
+datos$porcentaje <- round(datos$frecuencia / sum(datos$frecuencia) * 100, 2)
+
+ggplot(datos, aes(x = satisfaccion, y = frecuencia)) +
+ geom_bar(stat = "identity", fill = "cornflowerblue") +
+  geom_text(aes(label = paste0(porcentaje, "%")), vjust = -0.5) +
+  labs(title = "Distribución de Satisfacción Académica",
+       x = "Nivel de Satisfacción (1 = Muy Baja, 5 = Muy Alta)",
+       y = "Frecuencia") +
+  theme_minimal() +
+  ylim(0, max(datos$frecuencia) + 50)
+```
+
+### 6.5.7 Analisis bivariado Red social y Satisfaccion Academica
+
+```{r}
+tabla <- table(df$red_social_mas_usada, df$satisfaccion_academica)
+
+porcentaje_fila <- prop.table(tabla, margin = 1) * 100
+
+porcentaje_fila_redondeado <- round(porcentaje_fila, 2)
+
+print(porcentaje_fila_redondeado)    
+```
+
+```{r}
+melt_tabla <- melt(porcentaje_fila_redondeado)
+ggplot(melt_tabla, aes(Var2, Var1, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), size = 3) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Nivel de Satisfacción", y = "Red Social", fill = "%") +
+  theme_minimal()
+```
+
+### 6.5.8 Analisis bivariado Red social y Satisfaccion social
+
+```{r}
+tabla <- table(df$red_social_mas_usada, df$satisfaccion_social)
+
+porcentaje_fila <- prop.table(tabla, margin = 1) * 100
+
+porcentaje_fila_redondeado <- round(porcentaje_fila, 2)
+
+print(porcentaje_fila_redondeado)  
+```
+
+```{r}
+melt_tabla <- melt(porcentaje_fila_redondeado)
+ggplot(melt_tabla, aes(Var2, Var1, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = value), size = 3) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Nivel de Satisfacción", y = "Red Social", fill = "%") +
+  theme_minimal()
+```
+
+### 6.5.9 Conclusion
+
+Los estudiantes que usan Telegram como red social principal presentan el porcentaje más alto de satisfacción académica en el nivel medio (66.67%), seguido por los de LinkedIn y Instagram, que muestran concentraciones notables en niveles altos (niveles 4 y 5). En cambio, quienes usan TikTok y Whatsapp tienden a concentrarse en niveles medios (3 y 4), con una menor proporción en los niveles más altos. Esto sugiere que el uso predominante de redes con contenido más profesional o informativo (como Telegram y LinkedIn) puede estar asociado con una mayor satisfacción académica.
+
+En términos de satisfacción social, los estudiantes que utilizan Telegram, LinkedIn y Discord tienden a concentrarse más en niveles altos (4 y 5), especialmente Telegram con un 66.67% en nivel medio y 33.33% en el más alto. Por el contrario, los usuarios principales de TikTok, Whatsapp y Facebook/Meta muestran mayor dispersión, con un porcentaje considerable en los niveles bajos de satisfacción (niveles 1 y 2). Esto sugiere que el tipo de red social más utilizada puede estar vinculado a cómo los estudiantes se sienten socialmente: las redes más orientadas a comunidades cerradas o profesionales podrían estar relacionadas con mayor bienestar social.
+
+```{r}
+choose(3,2)*factorial(2)
+choose(3,2)
+```

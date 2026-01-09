@@ -1,0 +1,964 @@
+---
+title: "PG2-Informe"
+author: 
+  -del Castillo Collanatos Alonso Matias 
+  -Flores Ayllon Luis Alberto 
+  -Jerusalen Zelaya Jorge
+  -Liang Corrales Renzo Chen Heng 
+  -Zamudio Raez Trilce 
+format: html
+editor: visual
+embed-resources: true
+---
+
+```{r}
+install.packages("readr")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("stringr")
+install.packages("tidyr")
+install.packages("modeest")
+install.packages("reshape2")
+install.packages("DescTools")
+install.packages("MASS")
+install.packages("fitdistrplus")
+```
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(tidyr)
+library(modeest)
+library(reshape2)
+library(DescTools)
+library(MASS)
+library(fitdistrplus)
+```
+
+```{r}
+DF <- read.csv("df_limpia.csv")
+```
+
+# 1. Introducción
+
+En la actualidad, el uso intensivo de redes sociales y dispositivos móviles ha modificado los hábitos de estudio, concentración y bienestar de los estudiantes universitarios. Este informe busca identificar patrones y relaciones entre variables académicas y digitales, mediante una encuesta aplicada a estudiantes de distintas carreras y universidades, usando muestreo por conveniencia. Se emplean técnicas estadísticas descriptivas y exploratorias para analizar los datos y responder a los objetivos planteados.
+
+# 2. Contexto
+
+## 2.1 Población objetivo
+
+Estudiantes universitarios que estén matriculados en alguna institución de educación superior durante el ciclo académico 2025-I. La población está formada por alumnos de diferentes carreras y ciclos de estudio (desde el primer hasta el último ciclo), que usen redes sociales con frecuencia. Se considerarán estudiantes de universidades tanto públicas como privadas
+
+## 2.2 Tipo de muestreo
+
+El muestreo por conveniencia es una técnica de muestreo no probabilística donde las muestras de la población se seleccionan solo porque están convenientemente disponibles para el investigador. Con el tema encuestamos aleatoriamente a los estudiantes universitarios que están más accesibles o disponibles, ya sea por cercanía dentro del campus, facilidad de contacto, pertenecer al mismo entorno académico.
+
+## 2.3 Recolección de datos
+
+Crearemos un cuestionario con preguntas claves que nos ayuden a recolectar los datos necesarios. Este formulario lo llenaran los universitarios del ciclo 2025-I.
+
+## 2.4 Variables
+
+**Hora promedio de estudio - Numérica Continua**
+
+Número promedio de horas que un estudiante dedica al estudio diariamente.
+
+**Promedio de notas del último semestre - Numérica Continua**
+
+Promedio numérico de calificaciones obtenidas por el estudiante durante el último semestre académico.
+
+**Tiempo promedio de atención sostenida sin distracciones - Numérica Discreta**
+
+Tiempo en minutos que un estudiante puede mantener la atención sin distracciones durante una actividad académica.
+
+**Revisiones diarias – Numérica Discreta**
+
+Número de veces que un estudiante revisa su celular durante el día.
+
+**Horas dormidas - Numérica Discreta**
+
+Número de horas de sueño que reporta tener el estudiante por noche.
+
+**Tipo de contenido que consume - Categórica Nominal**
+
+Tipo de contenido digital que el estudiante consume principalmente en redes sociales (Educación, Entretenimiento, Información, Socializar.).
+
+**Satisfacción académica - Categórica Ordinal**
+
+Nivel de satisfacción con el rendimiento académico actual, expresado en una escala del 1 al 5.
+
+**Satisfacción social - Categórica Ordinal**
+
+Nivel de satisfacción con la interacción social presencial con amigos o compañeros, en una escala del 1 al 5.
+
+**Tipo de universidad - Categórica Nominal**
+
+Clasificación de la universidad a la que pertenece el estudiante: Pública o Privada.
+
+**Red social más usada - Categórica Nominal**
+
+Red social que el estudiante utiliza con mayor frecuencia (WhatsApp, Instagram, TikTok, Facebbok, X(Twitter), Linkedin, Telegram, Discord, Otro).
+
+------------------------------------------------------------------------
+
+# 3. Análisis Descriptivo
+
+## 3.1 Análisis univariado
+
+En el análisis univariado se describe cada variable por separado usando medidas como la media, mediana, moda, desviación estándar y asimetría. También se emplean gráficos como histogramas, boxplots y barras para visualizar su distribución.
+
+**Variable revisiones diarias**
+
+-   La media de revisiones diarias es de 10, lo que indica que, en promedio, los estudiantes revisan 10 veces al dia sus redes sociales
+
+-   la mediana de revisiones diarias es 6, es decir, la mitad de los estudiantes revisa sus redes sociales al menos 6 veces al día y la otra mitad revisa su redes sociales mas de 6 veces al dia.
+
+-   la moda es 10, lo que significa que el valor mas común para revisar sus redes sociales entre los estudiantes es de 10
+
+-   La varianza de revisiones diarias es de 187.52, lo que indica que los estudiantes presentan cierta heterogeneidad en las revisiones diarias a sus redes sociales.
+
+-   coeficiente de variación es de 1.35, lo que evidencia una muy alta dispersión de los datos con respecto a su media. Esto sugiere que no hay un patrón uniforme y que los estudiantes presentan comportamientos muy diversos en esta variable.
+
+```{r}
+summary(DF$revision_dia)
+#moda
+mfv(DF$revision_dia, na_rm = TRUE)
+#varianza
+round(var(DF$revision_dia, na.rm = TRUE),2)
+#coef. de variacion
+round((sd(DF$revision_dia, na.rm = TRUE) / mean(DF$revision_dia, na.rm = TRUE)),2)
+
+# Histograma de revision_dia
+hist(DF$revision_dia,
+     main = "Histograma de revisiones diarias a redes sociales",
+     xlab = "Número de revisiones por día",
+     col = "skyblue",
+     border = "white")
+```
+
+**Variable tiempo promedia de atencion sostenida sin distracciones (tiempo sin redes en horas)**
+
+-   La media de tiempo sin redes es de 3.59 horas, lo que indica que, en promedio, los estudiantes tienen un tiempo de atencion sostenida sin distracciones moderado.
+
+-   la mediana de tiempo sin redes es 3 horas, es decir, la mitad de los estudiantes tiene un tiempo de atencion sostenida sin distracciones menor a 3 horas y la otra mitad mayor a 3 horas.
+
+-   la moda de tiempo sin redes es 2 horas, lo que significa que el valor mas común de tiempo de atencion sostenida sin distracciones es de 2 horas
+
+-   La varianza de tiempo sin redes es 6.74,lo que indica una dispersión moderada de los datos en torno a la media.
+
+-   coeficiente de variación es de 0.72, lo que revela una alta variabilidad relativa respecto al promedio. Es decir, aunque algunos estudiantes logran mantener una atención prolongada, otros se distraen mucho más rápidamente, lo que refleja diferencias importantes en los hábitos de concentración.
+
+```{r}
+summary(DF$tiempo_sin_redes)
+#moda
+mfv(DF$tiempo_sin_redes, na_rm = TRUE)
+#varianza
+round(var(DF$tiempo_sin_redes, na.rm = TRUE),2)
+#coef. de variacion
+round((sd(DF$tiempo_sin_redes, na.rm = TRUE) / mean(DF$tiempo_sin_redes, na.rm = TRUE)),2)
+
+# Histograma de tiempo_sin_redes
+hist(DF$tiempo_sin_redes,
+     main = "Histograma de tiempo de atención sostenida (sin redes)",
+     xlab = "Tiempo promedio (horas)",
+     col = "lightgreen",
+     border = "white")
+```
+
+**Hora de estudio y universidad (publica,privada)**
+
+```{r}
+# Histograma de horas de estudio
+hist(DF$horas_estudio,
+     main = "Histograma de horas de estudio diario",
+     xlab = "Horas de estudio",
+     col = "orange",
+     border = "white")
+
+# Frecuencia de estudiantes por tipo de universidad
+table(DF$universidad)
+
+# Porcentaje por tipo de universidad
+prop.table(table(DF$universidad))*100
+
+```
+
+## 3.2 Análisis multivariado
+
+```{r}
+# Diagrama de dispersión
+plot(DF$revision_dia, DF$tiempo_sin_redes,
+     main = "Relación entre revisión de redes y atención sostenida",
+     xlab = "Revisiones diarias a redes",
+     ylab = "Tiempo de atención sostenida (horas)",
+     pch = 19, col = "purple")
+
+# Línea de tendencia
+abline(lm(tiempo_sin_redes ~ revision_dia, data = DF), col = "red", lwd = 2)
+
+# Coeficiente de correlación de Pearson
+cor(DF$revision_dia, DF$tiempo_sin_redes, use = "complete.obs")
+```
+
+El gráfico muestra una **relación negativa débil** entre las revisiones diarias a redes sociales y el tiempo de atención sostenida. A medida que aumentan las revisiones, el tiempo de concentración tiende a disminuir ligeramente. Sin embargo, la dispersión de los datos sugiere que la relación no es fuerte y puede estar influida por otros factores.
+
+```{r}
+boxplot(DF$horas_estudio ~ DF$universidad,
+        data = DF,
+        main = "Comparación de horas de estudio según tipo de universidad",
+        xlab = "Tipo de universidad",
+        ylab = "Horas de estudio diario",
+        col = c("lightblue", "lightgreen"))
+```
+
+Aunque la mitad de los estudiantes de ambos tipos de universidades estudia un tiempo similar, las universidades privadas tienen una proporción considerable de estudiantes que dedican un número de horas extraordinariamente alto al estudio, lo que sugiere una mayo dedicación en ese segmento.
+
+# 4. Análisis Probabilístico
+
+## 4.1 Probabilidad empírica
+
+**Primera variable - Tipo de contenido en redes sociales**
+
+La variable tipo de contenido en redes sociales es categórica nominal y clasifica el contenido principal que consume un estudiante, sin un orden específico.
+
+**Categorías**:
+
+-   **Educación**: Contenido académico o educativo.
+
+-   **Entretenimiento**: Contenido para ocio (ej., videos, deportes, música).
+
+-   **Información**: Contenido relacionado con noticias, actualidad, datos.
+
+-   **Socializar**: Contenido para interactuar con otras personas (ej., mensajes, publicaciones sociales).
+
+```{r}
+contenido_frecuencias <- table(DF$contenido)
+contenido_frecuencias
+```
+
+**Experimento aleatorio primera variable**
+
+Seleccionar una persona al azar del estudio sobre la “Influencia de las redes sociales en el estilo de vida de los jóvenes universitarios” y observar el tipo de contenido que consume en redes sociales.
+
+$\Omega_{\text{Contenido}} = \{\text{Educion},\text{Entretenimiento}, \text{Información},  \text{Socializar}\}$
+
+**Eventos Atómicos:**
+
+-   **Evento A**: Seleccionar un estudiante cuyo tipo de contenido más consumido sea **Educación**.
+
+-   **Evento B**: Seleccionar un estudiante cuyo tipo de contenido más consumido sea **Entretenimiento**.
+
+-   **Evento C**: Seleccionar un estudiante cuyo tipo de contenido más consumido sea **Información**.
+
+-   **Evento D**: Seleccionar un estudiante cuyo tipo de contenido más consumido sea **Socializar**.
+
+**Probabilidades de Eventos:**
+
+**Total de datos**
+
+```{r}
+total_contenido <- sum(contenido_frecuencias) # Total de estudiantes
+total_contenido
+```
+
+```{r}
+Educacion <- contenido_frecuencias["Educación (contenido académico)"] / total_contenido
+print(paste("Probabilidad de Educación:", Educacion))
+```
+
+```{r}
+Entretenimiento <- contenido_frecuencias["Entretenimiento (ver videos, seguir deportes, escuchar música)"] / total_contenido
+print(paste("Probabilidad de Entretenimiento:", Entretenimiento))
+```
+
+```{r}
+Informacion <- contenido_frecuencias["Información (noticias , actualidad)"] / total_contenido
+print(paste("Probabilidad de Información:", Informacion))
+```
+
+```{r}
+# Probabilidad de Socializar
+Socializar <- contenido_frecuencias["Socializar"] / total_contenido
+print(paste("Probabilidad de Socializar:", Socializar))
+```
+
+**Comprobación (Suma de Eventos Anatomicos)**
+
+Debemos de comprobar que la suma de probabilidades de los evento sea igual a 1.
+
+```{r}
+sumaProbContenidos <- Educacion + Entretenimiento + Informacion + Socializar
+print(paste("Suma de probabilidades del tipo de contenido:", sumaProbContenidos))
+```
+
+**Segunda variable - Promedio Ponderado**
+
+La variable promedio ponderado es cuantitativa continua y refleja el promedio de notas según los créditos de cada curso. Para el análisis probabilístico, se agrupa en tres categorías.
+
+**Categorías**:
+
+-   **Bajo**: Promedio de calificaciones menor o igual a 10.
+
+-   **Moderado**: Promedio entre 10 y 15.
+
+-   **Alto**: Promedio mayor a 15.
+
+**Experimento aleatorio para la segunda variable**
+
+Seleccionar una persona al azar del estudio sobre la “Influencia de las redes sociales en el estilo de vida de los jóvenes universitarios” y observar el promedio ponderado.
+
+$\Omega_{\text{Promedio}} = \{\text{Bajo}, \text{Moderado}, \text{Alto}\}$
+
+**Eventos Anatómicos:**
+
+-   **Evento E:** Seleccionar un estudiante al azar y tenga promedio **bajo** (Promedio ≤ 10).
+
+-   **Evento F:** Seleccionar un estudiante al azar y tenga promedio **moderado** (10 \< Promedio ≤ 15).
+
+-   **Evento G:** Seleccionar un estudiante al azar y tenga promedio **alto** (Promedio \> 15).
+
+```{r}
+DF <- DF %>%
+  mutate(DesempeñoAcademico = factor(case_when(
+    promedio <= 10 ~ "Bajo",           
+    promedio <= 15 ~ "Moderado",     
+    promedio > 15 ~ "Alto"              
+  ), levels = c("Bajo", "Moderado", "Alto"))) 
+```
+
+```{r}
+#Esta tabla nos  muestra la cantidad de elementos para cada rango establecido
+table(DF$DesempeñoAcademico)
+```
+
+**Probabilidad Eventos**
+
+**Total de datos**
+
+```{r}
+tot <- sum(!is.na(DF$DesempeñoAcademico))
+tot
+```
+
+```{r}
+Bajo <- round(sum(DF$DesempeñoAcademico == "Bajo", na.rm = TRUE) / tot, 3)
+print(paste("Promedio bajo:", Bajo))
+```
+
+```{r}
+Moderado <- round(sum(DF$DesempeñoAcademico == "Moderado", na.rm = TRUE) / tot, 3)
+print(paste("Promedio Moderado:", Moderado))
+```
+
+```{r}
+Alto <- round(sum(DF$DesempeñoAcademico == "Alto", na.rm = TRUE) / tot, 3)
+print(paste("Promedio alto:", Alto))
+```
+
+**Comprobación (Suma de Eventos Anatomicos)**
+
+Debemos de comprobar que la suma de probabilidades de los evento sea igual a 1.
+
+```{r}
+sumaProbCT <- Bajo + Moderado + Alto
+print(paste("Suma de probabilidades del Promedio ponderado:", sumaProbCT))
+```
+
+## 4.2 Probabilidad condicional
+
+**Primera variable: Promedio ponderado -\> continua**
+
+La variable promedio ponderado es cuantitativa continua y refleja el promedio de notas considerando los créditos de cada curso. Para el análisis probabilístico, se agrupará en tres categorías.
+
+**Categorías**:
+
+-   **Bajo**: Promedio de calificaciones menor o igual a 10.
+
+-   **Moderado**: Promedio entre 10 y 15.
+
+-   **Alto**: Promedio mayor a 15.
+
+**Segunda variable: Satisfaccion academica -\> categorica nominal**
+
+La variable "satisfacción académica" es categórica nominal y representa el nivel subjetivo de satisfacción que siente el estudiante respecto a su desempeño académico, sin un orden numérico entre categorías.
+
+**Categorías**:
+
+-   **1**: El numero **Muy insatisfecho** representa que el estudiante esta muy insatisfecho.
+
+-   **2**: El numero **Insatisfecho** representa que el estudiante esta insatisfecho.
+
+-   **3**: El numero **Neutral** representa una aprobación neutral en su satisfacción académica.
+
+-   **4**: El numero **Satisfecho** representa que el estudiante esta satisfecho.
+
+-   **5**: El numero **Muy satisfecho** representa que el estudiante esta muy satisfecho.
+
+### 4.2.1Definicion de eventos simples
+
+-   **Evento A**: Seleccionar un estudiante de la base de datos cuyo promedio este en la categoría **alto**.
+-   **Evento B**: Seleccionar un estudiante de la base de datos cuya satisfacción académica sea **1**.
+-   **Evento C**: Seleccionar un estudiante de la base de datos que su promedio este en la categoría **alto** y su satisfaccion academica sea **2** académicamente.
+
+```{r}
+tabla_doble <- table(DF$DesempeñoAcademico, DF$satisfaccion_academica)
+tabla_con_totales <- addmargins(tabla_doble)
+print(tabla_con_totales)
+```
+
+### 4.2.2 Probar Independencia
+
+-   Estudiante con promedio en la categoría **alto** y satisfacción académica **1**.
+
+$P(A \cap B)$ :
+
+```{r}
+PAB<-round((5/1148),3)
+print(paste("La probabilidad que un estudiante tenga categoria alto en su promedio y satisfacion 1 es:", PAB))
+```
+
+-   Probabilidad que un estudiante tenga promedio ponderado alto
+
+$P(A)$ :
+
+```{r}
+A<-round((416/1148),2)
+print(paste("La probabilidad que un estudiante tenga promedio ponderado alto es:", A))
+```
+
+-   Probabilidad que un estudiante pertenezca a la categoría satisfaccion 1
+
+$P(A)$ :
+
+```{r}
+B<-round((29/1148),2)
+print(paste("La probabilidad que un estudiante pertenezca a la satisfaccion 1 es:", B))
+```
+
+-   Al notar la diferencia de valores luego de realizar los cálculos
+
+$P(A)*P(B)$:
+
+```{r}
+round((A*B),3)
+```
+
+-   Concluimos que el evento **A** y el evento **B** son dependientes entre si.
+
+### 4.2.3 Aplicacion de las propiedades de eventos
+
+$P(A|B)$ :
+
+```{r}
+PAdadoB <- (PAB / B)
+print(paste("La probabilidad de que un estudiante tenga promedio alto dado que su satisfacción es 1 es:", PAdadoB))
+```
+
+$P(A\cup B)$ :
+
+```{r}
+P_union<-(A+B)-PAB
+print(paste("La probabilidad de que un estudiante tenga promedio alto y que su satisfacción es 1 es:", P_union))
+```
+
+Hay un 1% de probabilidad de que un estudiante tenga satisfacción académica = 1 dado que tiene promedio alto.
+
+### 4.2.4 Probabilidad de que ocurra A dado que no ocurre B
+
+$P(B^c) = 1 - P(B)$
+
+```{r}
+PAYB_Complemento<-A-PAB
+PAnoB<-PAYB_Complemento/(1-B)
+PAnoB
+```
+
+-   $B|A$
+
+-   $P(A|B) = 0.1333$
+
+-   $P(A|B^c) = 0.36701$
+
+-   $P(B) = 0.3$
+
+-   $P(B^c) = 1 - P(B)$
+
+```{r}
+PBA<-(PAdadoB*B)/(PAdadoB*B+PAnoB*(1-B))
+PBA
+```
+
+# 5. Variables aleatorias
+
+## 5.1 Variable Discreta Binominal : (Satisfacción social).
+
+```{r}
+# Cálculo del tamaño de la muestra
+n <- length(DF$satisfaccion_social)
+cat("Tamaño de la muestra para la variable 'Satisfacción social':", n, "\n")
+```
+
+**Justificación de la recodificación**
+
+Como uno de nuestros objetivos fue analizar cómo las redes sociales se relacionan con la satisfacción social, se observó que estudiantes que usan Telegram o LinkedIn presentan mayor frecuencia en los niveles 4 y 5 de satisfacción social. Esto sugiere que estas redes, por su contenido más profesional o enfocado en comunidad, están asociadas a una percepción social más positiva. Por ello, se consideraron los valores 4 y 5 como satisfechos, y 1, 2 y 3 no satifechos.
+
+**Definimos el caso**
+
+Después de realizado el estudio, se plantea una evaluación complementaria en la que los estudiantes que participaron sean convocados nuevamente, con el propósito de identificar cuántos de ellos reportan una satisfacción social mayor o igual a 4, lo que corresponde a una percepción satisfactoria respecto a sus interacciones sociales presenciales con amigos o compañeros en su centro de estudios y/o trabajo. Entonces, ¿cuál es la probabilidad de seleccionar exactamente 900 personas del total (n = 1297) que hayan reportado este nivel de satisfacción?
+
+**Justificación teórica para usar la distribución binomial**
+
+El uso de una distribución binomial está justificado porque se cumplen las siguientes condiciones:
+
+-   **n fijo:** El número de estudiantes encuestados (n = 1297)
+-   **Dos resultados posibles por ensayo:** el estudiante satisfecho (4 o 5) o no satisfecho (1, 2 o 3).
+-   **Ensayos independientes:** la respuesta de un estudiante no influye en la de los demás.
+-   **Probabilidad constante de éxito (p):** estimada como la proporción de estudiantes con satisfacción ≥ 4.
+
+En este caso, la variable original de escala (1 a 5) se ha recodificado en una variable dicotómica, considerando como **éxito** a los estudiantes que respondieron con valores **4 o 5**, que reflejan una percepción satisfactoria o muy satisfactoria.
+
+Por tanto, el número de estudiantes satisfechos puede modelarse como:
+
+$$X \sim B(n, p)$$
+
+Donde:
+
+X: Numero de estudiantes con satisfaccion social ≥ 4.
+
+n = 1297
+
+p = P(satisfacción social ≥ 4)
+
+```{r}
+# Parámetros binomiales
+n <- length(DF$satisfaccion_social)
+p <- sum(DF$satisfaccion_social >= 4, na.rm = TRUE) / nrow(data.frame(DF$satisfaccion_social))
+cat("n =", n, "\n")
+cat(sprintf("p = %.4f\n", p))
+```
+
+### 5.1.1 Distribución de probabilidades:
+
+**Probabilidades individuales**
+
+𝑃(𝑋=0): Probabilidad de que ningún estudiante tenga satisfacción social ≥ 4.
+
+𝑃(𝑋=1): Probabilidad de que exactamente 1 estudiante tenga satisfacción social ≥ 4.
+
+𝑃(𝑋=1297): Probabilidad de que todos 1os 1297 estudiantes tenga satisfacción social ≥ 4.
+
+**Distribución binomial completa**
+
+```{r}
+x <- 0:n
+y <- dbinom(x, size = n, prob = p)
+
+plot(x, y, type = "h", lwd = 1.5, col = "#1f77b4",
+     main = "Distribución Binomial Completa: Satisfacción Social ≥ 4",
+     xlab = "Número de estudiantes con satisfacción social ≥ 4",
+     ylab = "Probabilidad")
+
+x_obs <- sum(DF$satisfaccion_social >= 4, na.rm = TRUE)
+abline(v = x_obs, col = "red", lty = 2)
+abline(v = 900, col = "darkgreen", lty = 3)
+```
+
+-   Línea verde = valor planteado en el caso (900)
+
+**Interpretación:** La distribución muestra que el valor 900 (estudiantes con satisfacción social ≥ 4) está alejado del centro, en una zona de baja probabilidad según el modelo binomial. El zoom entre 820 y 920 permite ver con mayor claridad que se trata de un resultado poco frecuente.
+
+```{r}
+x_zoom <- 820:920
+y_zoom <- dbinom(x_zoom, size = n, prob = p)
+
+plot(x_zoom, y_zoom, type = "h", lwd = 2, col = "#1f77b4",
+     main = "Zoom: Distribución Binomial centrada en el valor esperado",
+     xlab = "Número de estudiantes con satisfacción social ≥ 4",
+     ylab = "Probabilidad")
+
+abline(v = 866, col = "red", lty = 2)     # Valor real observado
+abline(v = 900, col = "darkgreen", lty = 3) # Valor del caso
+```
+
+### **5.1.2 Propiedades de la distribución:**
+
+```{r}
+esperanza <- n * p
+cat(sprintf("Esperanza E(X): %.2f\n", esperanza))
+
+varianza <- n * p * (1 - p)
+cat(sprintf("Varianza V(X): %.2f\n", varianza))
+
+desviacion_estandar <- sqrt(varianza)
+cat(sprintf("Desviación Estándar SD(X): %.2f\n", desviacion_estandar))
+
+coeficiente_variacion <- desviacion_estandar / esperanza
+cat(sprintf("Coeficiente de Variación CV(X): %.4f\n", coeficiente_variacion))
+```
+
+Dado que el coeficiente de variación es solo del 1.96%, esto indica una **baja dispersión**. Los valores se concentran muy cerca del promedio esperado (866), mostrando **alta consistencia**.
+
+**Responder el caso:**
+
+¿Cuál es la probabilidad de que exactamente 900 estudiantes reporten satisfacción social ≥ 4?
+
+```{r}
+prob_900 <- dbinom(900, size = n, prob = p)
+cat(sprintf("P(X = 900) = %.5f\n", prob_900))
+```
+
+La probabilidad de encontrar exactamente 900 estudiantes satisfechos es **muy baja**, porque está alejado del valor medio de 866.
+
+**Ejemplo usando la distribución acumulada:**
+
+¿Cuál es la probabilidad de encontrar **880 estudiantes** del estudio o mas en el conjunto 1297 que participaron, que reporten satisfacción social ≥ 4?
+
+```{r}
+prob_880_o_mas <- pbinom(879, size = n, prob = p, lower.tail = FALSE)
+cat(sprintf("P(X ≥ 880) = %.5f\n", prob_880_o_mas))
+```
+
+**Interpretación numerica**
+
+La probabilidad de que 880 o más estudiantes estén satisfechos es aproximadamente 21.34%. Aunque no es extremadamente baja, se encuentra en la parte menos probable de la distribución.
+
+**Visualización del ejemplo: Distribución acumulada complementaria P(X ≥ x):**
+
+```{r}
+X <- 800:900
+
+# Probabilidades acumuladas normales (P(X ≤ x))
+acumulada <- pbinom(X, size = n, prob = p)
+
+# Complementaria: P(X ≥ 880) = 1 - P(X ≤ 879)
+p_880_o_mas <- pbinom(879, size = n, prob = p, lower.tail = FALSE)
+
+# Gráfico invertido para visualizar cola derecha
+plot(X, 1 - acumulada, type = "h", col = "blue",
+     main = "Distribución acumulada: P(X ≥ x)",
+     xlab = "Estudiantes con satisfacción social ≥ 4",
+     ylab = "P(X ≥ x)")
+
+# Línea vertical en 880
+abline(v = 880, col = "red", lty = 2)
+
+# Texto en el punto
+text(880, p_880_o_mas, paste0("P(X ≥ 880) ≈ ", round(p_880_o_mas, 5)),
+     pos = 3, col = "red")
+```
+
+**Interpretación grafica**
+
+El gráfico muestra que el valor 880 se ubica en la cola derecha de la distribución, donde las probabilidades disminuyen. Aunque aún es posible obtener ese resultado, no es común bajo este modelo estadístico.
+
+### 5.1.3 Conclusion
+
+La cantidad de estudiantes con satisfacción social alta (≥ 4) mediante una distribución binomial, se obtuvo una probabilidad muy baja de que exactamente 900 estudiantes del total de 1297 presenten ese nivel de satisfacción. Esto indica que alcanzar ese número está lejos del promedio (866) y, por tanto, representa un resultado poco común bajo el modelo estadístico asumido.Variable Discreta Geometrica de estudio: (Promedio , Horas de sueño)
+
+## 5.2 Variable Discreta Geometrica: (Promedio , Horas de sueño)
+
+-   Promedio \> 15
+
+-   Horas de sueño ≥ 7
+
+```{r}
+DF <- DF %>%   mutate(Exito = ifelse(promedio > 15 & horas_sueno >= 7, 1, 0)) 
+```
+
+**Definimos el Caso:**
+
+Después de realizado el estudio, se busca entrevistar uno a uno a los estudiantes hasta encontrar al primero que cumpla con tener un promedio mayor a 15 y dormir al menos 7 horas diarias. Entonces, ¿cuál es la probabilidad de que el primer estudiante con estas características sea el intento número 20?
+
+**Justificación teórica para usar la distribución geometrica:**
+
+La distribución geométrica es adecuada en este caso porque se cumplen las siguientes condiciones:
+
+1.  **Ensayos independientes**: cada estudiante es una observación independiente.
+
+2.  **Dos resultados posibles por ensayo**: éxito (cumple con tener promedio \> 15 y dormir ≥ 7 horas) o fracaso.
+
+3.  **Probabilidad constante de éxito (p)**: estimada como la proporción de estudiantes que cumplen ambas condiciones.
+
+**Por tanto, modelamos la variable aleatoria:** $$X \sim Geo(p)$$**Donde:**
+
+-   X representa el número de estudiantes evaluados hasta encontrar el primero con éxito
+
+-   p es la probabilidad de que un estudiante tenga promedio \> 15.
+
+Definimos la variable aleatoria X como el número de intentos hasta encontrar por primera vez un estudiante que cumple con dos condiciones: tener un promedio mayor a 15 y dormir al menos 7 horas diarias.
+
+Entonces, P(X=n) representa la probabilidad de que el primer estudiante exitoso sea encontrado exactamente en el n-ésimo intento
+
+```{r}
+n_total <- sum(!is.na(DF$Exito))
+cat("Tamaño de la muestra (n):", n_total, "\n")
+```
+
+```{r}
+total_muestra <- sum(!is.na(DF$Exito))
+exitos <- sum(DF$Exito == 1, na.rm = TRUE)
+p <- exitos / total_muestra
+cat("Probabilidad de éxito (p):", round(p, 4), "\n")
+```
+
+En nuestra muestra, la probabilidad de éxito es 14.83% lo que quiere decir que son los estudiantes cumplen con tener un promedio mayor a 15 y dormir al menos 7 horas diarias. Esta probabilidad servirá como base para modelar el comportamiento de la variable aleatoria geométrica.
+
+### 5.2.1 Graficos y propiedades
+
+**Distribución Geométrica hasta 500 intentos**
+
+```{r}
+X <- 1:1234
+probabilidad_geom <- dgeom(X - 1, prob = p)
+
+plot(X, probabilidad_geom,
+     type = "h", col = "blue", lwd = 1,
+     main = "Distribución Geométrica",
+     xlab = "Número de estudiantes de estudiantes entrevistados",
+     ylab = "Probabilidad")
+```
+
+La probabilidad disminuye exponencialmente a medida que aumenta el número de intentos. La mayor probabilidad ocurre en los primeros X
+
+**Zoom: Distribución hasta 30 intentos**
+
+```{r}
+plot(X[1:30], probabilidad_geom[1:30],
+     type = "h",
+     col = "darkgreen",
+     lwd = 1,
+     main = "Zoom: Distribución Geométrica",
+     xlab = "Número de estudiantes entrevistados",
+     ylab = "Probabilidad")
+```
+
+Dentro de los primeros 20 intentos, la mayoría de probabilidades relevantes se concentran. A partir de ahí, la probabilidad de éxito es casi nula.
+
+**Propiedades de la distribución geométrica**
+
+```{r}
+esperanza <- 1 / p
+varianza <- (1 - p) / (p^2)
+desviacion <- sqrt(varianza)
+cv <- desviacion / esperanza
+
+cat("Esperanza:", round(esperanza, 4), "\n")
+cat("Varianza:", round(varianza, 2), "\n")
+cat("Desviación estándar:", round(desviacion, 4), "\n")
+cat("Coeficiente de variación:", round(cv, 6), "\n")
+```
+
+La esperanza indica que, en promedio, se necesitan 6.74 intentos para encontrar al primer estudiante con éxito. La varianza y la desviación estándar reflejan que existe una alta dispersión: a veces se encuentra rápidamente, pero otras veces puede tomar muchos más intentos. El coeficiente de variación cercano a 1 confirma esta alta variabilidad.
+
+### **5.2.2 Probabilidad acumulada**
+
+```{r}
+p_acumulada <- pgeom(19, prob = p)
+cat("P(X <= 20):", round(p_acumulada, 4))
+```
+
+Por su parte, la probabilidad acumulada, como P(X≤20) = 0.9597, representa al 95.97% de probabilidad de hallar un estudiante con éxito dentro de los primeros 20 intentos.
+
+### **5.2.3 Función de Probabilidad Acumulada**
+
+```{r}
+acumulada <- pgeom(X - 1, prob = p)
+plot(X[1:30], acumulada[1:30],
+     type = "l",
+     col = "purple",
+     lwd = 2,
+     main = "Probabilidad Acumulada ",
+     xlab = "Número de estudiantes entrevistados",
+     ylab = "P(X ≤ x)")
+abline(v = 20, col = "red", lty = 2)
+text(55, p_acumulada, paste0("P(X ≤ 30) ≈ ", round(p_acumulada, 4)), col = "red")
+```
+
+### **5.2.4 En conclusión:**
+
+La probabilidad de encontrar al primer estudiante exitoso en 20 intentos o menos es de aproximadamente 95.97%, según la distribución geométrica. Esto indica una alta probabilidad de éxito dentro de los primeros 20 entrevistados.
+
+## 5.3 Variable aleatoria continua (promedio):
+
+```{r}
+hist(DF$promedio, breaks=20)
+```
+
+Al realizar el gráfico de la distribución de la variable promedio podemos observar que se asemeja a una distribución normal
+
+```{r}
+fit_exp <- fitdist(DF$promedio[!is.na(DF$promedio)], "norm")
+plot(fit_exp)
+```
+
+Usando la función fitdisc podemos ver que nuestra variables se ajusta de forma aproximada al modelo de distribucion normal.
+
+### 5.3.1 Distribución (GRÁFICOS Y PROPIEDADES)
+
+```{r}
+# 1. Calcular media y desviación estándar del promedio
+media <- mean(DF$promedio, na.rm = TRUE)
+mediana <- median(DF$promedio, na.rm = TRUE)
+desv <- sd(DF$promedio, na.rm = TRUE)
+print(paste("Media de la variable promedio",media))
+print(paste("Mediana de la variable promedio", mediana))
+print(paste("Desvision estandar de la variable promedio", desv))
+```
+
+Siguiendo las propiedades de una distribución normal se debería cumplir que la media debe ser igual a la mediana. Por lo que vemos al realizar los cálculos, notamos que esta característica es aproximada en nuestra variable.
+
+#### **5.3.1.1 Caso**
+
+Teniendo el gráfico y los valores de la media y mediana de la variable promedio podemos decir que la distribución se aproxima a una normal, por esas razones la trataremos como tal. \## DESARROLL0 dEL CASO Se desea saber cual es la probabilidad de que mas del 45% de los estudiantes tenga de promedio de 13.5 a 15.5
+
+```{r}
+# 1. Calcular p = P(12.5 <= X <= 15.5)
+p <- pnorm(17, mean = media, sd = desv) - pnorm(14, mean = media, sd = desv)
+
+# 2. Definir tamaño de muestra
+n <- nrow(DF)  # Puedes ajustar este valor
+
+# 3. Calcular estadístico Z para 80%
+z <- (0.45 - p) / sqrt(p * (1 - p) / n)
+
+# 4. Calcular probabilidad de que más del 80% estén en el rango aceptable
+probabilidad <- 1 - pnorm(z)
+probabilidad
+```
+
+#### 5.3.1.2 Grafica de distribución
+
+```{r}
+plot(density(na.omit(DF$promedio)), 
+     main = "Densidad de los promedios (sin NA)",
+     xlab = "Valor del promedio", ylab = "Densidad", 
+     col = "blue", lwd = 2)
+# Sombrear el área entre 12.5 y 15.5
+dens <- density(DF$promedio, na.rm = TRUE)
+x_sombra <- dens$x[dens$x >= 13.5 & dens$x <= 15.5]
+y_sombra <- dens$y[dens$x >= 13.5 & dens$x <= 15.5]
+
+# Rellenar con color
+polygon(c(13.5, x_sombra, 15.5), c(0, y_sombra, 0),
+        col = rgb(0.2, 0.6, 1, 0.4), border = NA)
+
+# Agregar línea vertical en los límites del rango
+abline(v = c(13.5, 15.5), col = "darkgreen", lty = 2)
+
+# Líneas de referencia
+abline(v = media, col = "red", lwd = 2) # Línea de media
+
+# Leyenda
+legend("topleft",
+       legend = c(paste("Media:", round(media, 2)),
+                 "Área sombreada (12.5-15.5)",
+                 "Límites del área"),
+       col = c("red", rgb(0.2,0.6,1,0.4), "darkgreen"),
+       lty = c(1, 1, 2),  # Ajustado para coincidir con 3 elementos
+       lwd = c(2, 8, 1),  # Ajustado para coincidir con 3 elementos
+       bty = "n")  # Sin caja alrededor
+```
+
+## 5.4 Variable aleatoria continua horas de estudio
+
+Seleccionamos la variable de estudio horas de estudio para estudiantes que pueden estar más de 6 horas sin usar redes sociales.
+
+```{r}
+# Filtrar estudiantes que pueden estar más de 6 horas sin redes sociales
+DF_filtrado <- subset(DF, tiempo_sin_redes > 6)
+
+# Cálculo del tamaño de la muestra filtrada
+n <- nrow(DF_filtrado)
+cat("Tamaño de la muestra para estudiantes que pueden estar más de 6 horas sin redes sociales:", n, "\n")
+```
+
+### 5.4.1 Definimos el caso
+
+Después de realizado el estudio, se plantea una evaluación complementaria en la que solo se consideran los estudiantes que pueden estar más de 6 horas sin usar redes sociales. Se desea saber: ¿Cuál es la probabilidad de que un estudiante que puede estar más de 6 horas sin usar redes sociales estudie más de 4 horas al día?
+
+**Justificación teórica para usar la distribución log-normal**
+
+```{r}
+horas_estudio_limpias <- as.numeric(DF$horas_estudio)
+horas_estudio_limpias <- horas_estudio_limpias[!is.na(horas_estudio_limpias)]
+horas_estudio_limpias <- horas_estudio_limpias[horas_estudio_limpias > 0]
+
+aj1 <- fitdist(horas_estudio_limpias, "norm")
+aj2 <- fitdist(horas_estudio_limpias, "lnorm")
+aj3 <- fitdist(horas_estudio_limpias, "exp")
+aj4 <- fitdist(horas_estudio_limpias, "gamma")
+
+# Comparación
+gofstat(list(aj1, aj2, aj3, aj4))
+plot(aj1)
+plot(aj2)  
+plot(aj3)  
+plot(aj4)
+```
+
+La distribución log-normal resulta ser la más adecuada para modelar las horas de estudio, tanto por criterios estadísticos como visuales. El análisis con gofstat() mostró que esta distribución presenta el menor AIC, lo que indica el mejor equilibrio entre ajuste y simplicidad. Además, tuvo un mejor desempeño en los estadísticos de bondad de ajuste (KS, Cramér-von Mises y Anderson-Darling) en comparación con la normal y la exponencial, y resultados cercanos a la distribución gamma.
+
+Los gráficos de diagnóstico muestran que la log-normal se ajusta bien a la forma de los datos, capturando tanto el centro como las colas de la distribución. Aunque la gamma también ofrece un buen ajuste, su AIC es ligeramente superior. Por el contrario, la normal y la exponencial no representan adecuadamente la asimetría y dispersión observada.
+
+$H \sim \text{Log-Normal}(\mu, \sigma)$
+
+Donde: $H$: Horas de estudio de estudiantes que pueden estar más de 6 horas sin redes sociales. $\mu$: Media del logaritmo de las horas de estudio en este grupo. $\sigma$: Desviación estándar del logaritmo de las horas de estudio en este grupo.
+
+**Parámetros de la distribución**
+
+```{r}
+# Tomar el logaritmo de las horas de estudio
+log_horas <- log(DF_filtrado$horas_estudio[DF_filtrado$horas_estudio > 0])
+
+# Calcular media y desviación estándar del logaritmo
+mu_log <- mean(log_horas, na.rm = TRUE)
+sigma_log <- sd(log_horas, na.rm = TRUE)
+cat(sprintf("Media log(μ): %.4f\n", mu_log))
+cat(sprintf("Desviación estándar log(σ): %.4f\n", sigma_log))
+```
+
+**Distribución de probabilidades Probabilidad de estudiar más de 4 horas:** $$P(H > 4) = 1 - P(H \leq 4)$$
+
+```{r}
+prob_mas_4 <- 1 - plnorm(4, meanlog = mu_log, sdlog = sigma_log)
+cat(sprintf("P(H > 4) = %.4f\n", prob_mas_4))
+```
+
+Es decir, aproximadamente el 41% de los estudiantes que pueden estar más de 6 horas sin redes sociales estudian más de 4 horas al día.
+
+**Gráfica de la distribución normal**
+
+```{r}
+# Histograma de horas de estudio
+hist(DF_filtrado$horas_estudio, probability = TRUE,
+     main = "Distribución de Horas de Estudio (T > 6h sin redes)",
+     xlab = "Horas de estudio", col = "grey")
+curve(dlnorm(x, meanlog = mu_log, sdlog = sigma_log), add = TRUE, col = "blue", lwd = 2)
+abline(v = 4, col = "red", lty = 2)
+```
+
+El histograma muestra la distribución de las horas de estudio, y la curva azul representa el ajuste de la distribución log-normal. La línea roja indica el punto de 4 horas.
+
+**Interpretación**
+
+El área bajo la curva log-normal a la derecha de 4 representa la proporción esperada de estudiantes (que pueden estar más de 6 horas sin redes sociales) que estudian más de 4 horas al día. La alta dispersión (CV ≈ 0.70) indica que hay mucha variabilidad en los hábitos de estudio dentro de este grupo.
+
+**Propiedades de la distribución**
+
+```{r}
+# Esperanza y varianza de la log-normal
+esperanza <- exp(mu_log + (sigma_log^2)/2)
+varianza <- (exp(sigma_log^2) - 1) * exp(2*mu_log + sigma_log^2)
+cat(sprintf("Esperanza E(H): %.2f\n", esperanza))
+cat(sprintf("Varianza V(H): %.2f\n", varianza))
+cat(sprintf("Desviación estándar SD(H): %.2f\n", sqrt(varianza)))
+cat(sprintf("Coeficiente de variación CV(H): %.4f\n", sqrt(varianza)/esperanza))
+```
+
+La distribución log-normal es adecuada para modelar las horas de estudio en este grupo, ya que los datos son positivos y asimétricos. La probabilidad obtenida indica la proporción de estudiantes con este hábito de estudio, lo que ayuda a identificar perfiles de autocontrol digital y dedicación académica.
+
+## 6. Conclusiones
+
+El presente estudio exploró la relación entre los hábitos digitales y el rendimiento académico de estudiantes universitarios del ciclo 2025-I, mediante el análisis estadístico de variables como las horas de estudio, el promedio de notas, el tiempo de atención sostenida y el uso de redes sociales. El análisis univariado evidenció una alta variabilidad en los comportamientos estudiantiles, especialmente en el tiempo dedicado al estudio y la frecuencia de revisión del celular. A su vez, el análisis multivariado permitió identificar asociaciones relevantes, como la relación entre el tipo de contenido consumido y la satisfacción académica, así como una correlación positiva entre horas de estudio y promedio de notas. Asimismo, el análisis de ajuste mostró que las horas de estudio se ajustan mejor a una distribución log-normal, lo que refleja una asimetría donde la mayoría estudia pocas horas y solo una minoría dedica mucho más tiempo. Los resultados revelan una diversidad de hábitos dentro de la población universitaria y resaltan la importancia de fomentar estrategias para una mejor gestión del tiempo, un uso consciente de las redes sociales y una mayor concentración académica.
